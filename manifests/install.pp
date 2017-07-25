@@ -173,18 +173,6 @@ class python::install {
     }
     default: {
 
-      package { 'pip':
-        ensure  => $pip_ensure,
-        require => Package['python'],
-      }
-
-      if $pythondev {
-        package { 'python-dev':
-          ensure => $dev_ensure,
-          name   => $pythondev,
-        }
-      }
-
       if $::osfamily == 'RedHat' {
         if $pip_ensure != 'absent' {
           if $python::use_epel == true {
@@ -224,14 +212,14 @@ class python::install {
         $pip_package = 'python-pip'
       }
 
-      Package <| title == 'pip' |> {
-        name     => $pip_package,
-        category => $pip_category,
+      ensure_packages($pip_package, {'category' => $pip_category})
+      
+      if $pythondev {
+        ensure_packages($virtualenv_package)
       }
 
-      Package <| title == 'virtualenv' |> {
-        name => $virtualenv_package,
-      }
+      Package['python'] -> Package[$pip_package]
+
     }
   }
 
